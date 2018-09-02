@@ -52,7 +52,7 @@ export default class PICO {
     var pixels = grayscale(rgba, width, height);
     var shiftfactor = this.options.shiftfactor;
     var scalefactor = this.options.scalefactor;
-    var initialsize = this.options.initialsize * Math.sqrt(width * height) | 0;
+    var initialsize = this.options.initialsize;
     var rotation = this.options.rotation;
     var threshold = this.options.threshold;
     var dets = runCascade(pixels, width, height, this._clfn,

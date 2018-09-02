@@ -167,23 +167,24 @@ export function unpackCascade(bytes) {
  */
 export function runCascade(pixels, width, height, clfn, shiftfactor, scalefactor, initialsize, rotation) {
   rotation = rotation ? [].concat(rotation) : [0]; // index from qcostable/qsintable
-  var maxsize = Math.max(width, height);
+  var minsize = initialsize * Math.sqrt(width * height) | 0;
+  var blocksize = Math.max(width, height);
   var detections = [];
-  while (initialsize <= maxsize) {
-    let step = (shiftfactor * initialsize + 1) >> 0;
-    let offset = (initialsize / 2 + 1) >> 0;
+  while (blocksize >= minsize) {
+    let step = (shiftfactor * blocksize + 1) >> 0;
+    let offset = (blocksize / 2 + 1) >> 0;
     for (let r = offset; r <= height - offset; r += step) {
       for (let c = offset; c <= width - offset; c += step) {
         for (let i = 0; i < rotation.length; i++) {
           let a = rotation[i];
-          let q = clfn(r, c, a, initialsize, pixels, width);
+          let q = clfn(r, c, a, blocksize, pixels, width);
           if (q > 0.0) {
-            detections.push([r, c, initialsize, q, a]);
+            detections.push([r, c, blocksize, q, a]);
           }
         }
       }
     }
-    initialsize *= scalefactor;
+    blocksize /= scalefactor;
   }
   return detections;
 }
