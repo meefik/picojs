@@ -46,19 +46,12 @@ export default class PICO {
    * r - row, c - col, s - size, q - quality, a - angle in degrees
    */
   detect(image) {
-    var rgba = image.data;
-    var width = image.width;
-    var height = image.height;
-    var pixels = grayscale(rgba, width, height);
-    var shiftfactor = this.options.shiftfactor;
-    var scalefactor = this.options.scalefactor;
-    var initialsize = this.options.initialsize;
-    var rotation = this.options.rotation;
-    var threshold = this.options.threshold;
+    var { data, width, height } = image;
+    var pixels = grayscale(data, width, height);
+    var { shiftfactor, scalefactor, initialsize, rotation, threshold } = this.options;
     var dets = runCascade(pixels, width, height, this._clfn,
       shiftfactor, scalefactor, initialsize, rotation);
-    dets = this._mu(dets);
-    dets = clusterDetections(dets, threshold);
+    dets = clusterDetections(this._mu(dets), threshold);
     return dets;
   }
 }
