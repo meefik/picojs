@@ -44,14 +44,15 @@
       ctx.drawImage(video, 0, 0);
       var image = ctx.getImageData(0, 0, width, height);
       var dets = pico.detect(image);
+      // console.log(dets.map(x => x.q));
       // draw detections
       for (var i = 0; i < dets.length; ++i) {
         var face = dets[i];
         // check the detection score
         // if it's above the threshold, draw it
-        // the constant 30.0 is empirical: it depends on PICO options
-        if (face.q > 30.0) {
-          drawRotatedRect(~~(face.c - face.s / 2), ~~(face.r - face.s / 2), face.s, face.s, face.a, ~~(face.q / 3));
+        // the constant 10.0 is empirical: it depends on PICO options
+        if (face.q > 10.0) {
+          drawRotatedRect(~~(face.c - face.s / 2), ~~(face.r - face.s / 2), face.s, face.s, face.a, ~~(face.q / 10));
         }
       }
       requestAnimationFrame(loop);
