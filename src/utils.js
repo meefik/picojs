@@ -248,7 +248,7 @@ export function clusterDetections(dets, threshold) {
       }
     }
     // make a cluster representative
-    clusters.push({ r: r / n, c: c / n, s: s / n, q: q, a: a });
+    clusters.push({ r: r / n | 0, c: c / n | 0, s: s / n | 0, q: q, a: a });
   }
   return clusters;
 }

@@ -25,6 +25,15 @@ export default class PICO {
     this._mu = getMemoryUpdater(this.options.memory);
   }
   /**
+   * Parse the cascade from array.
+   *
+   * @param {ArrayBuffer} buffer Array of the cascade data.
+   */
+  parseCascade(buffer) {
+    var bytes = new Int8Array(buffer);
+    this._clfn = unpackCascade(bytes);
+  }
+  /**
    * Load the cascade from URL.
    *
    * @param {string} url URL of the cascade file.
@@ -32,10 +41,8 @@ export default class PICO {
    */
   loadCascade(url) {
     return fetch(url).then((response) => {
-      return response.arrayBuffer().then((buffer) => {
-        var bytes = new Int8Array(buffer);
-        this._clfn = unpackCascade(bytes);
-      });
+      if (!response.ok) throw new Error(response.statusText || 'Request error');
+      return response.arrayBuffer().then(this.parseCascade.bind(this));
     });
   }
   /**
