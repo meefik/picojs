@@ -14,10 +14,12 @@ export default (env = {}) => ({
     globalObject: 'typeof self !== "undefined" ? self : this'
   },
   module: {
-    rules: [{
-      test: /\.(js)$/,
-      exclude: /(node_modules)/,
-      use: 'babel-loader'
-    }]
+    rules: [
+      {
+        test: /\.(js)$/,
+        exclude: /(node_modules)/,
+        use: 'babel-loader'
+      }
+    ]
   }
 });

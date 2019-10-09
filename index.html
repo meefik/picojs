@@ -1,108 +1,109 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <title>PICO Face Detection Demo</title>
+    <script type="text/javascript" src="pico.js"></script>
+    <style>
+      #canvas {
+        transform: rotateY(180deg);
+      }
+    </style>
+  </head>
 
-<head>
-  <title>PICO Face Detection Demo</title>
-  <script type="text/javascript" src="pico.js"></script>
-  <style>
-    #canvas {
-      transform: rotateY(180deg);
-    }
-  </style>
-</head>
+  <body>
+    <h1>PICO Face Detection Demo</h1>
 
-<body>
+    <div>
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
 
-  <h1>PICO Face Detection Demo</h1>
-
-  <div>
-    <canvas id="canvas" width=640 height=480></canvas>
-  </div>
-
-  <script type="text/javascript">
-    var detect;
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    var video = document.createElement('video');
-    // face detection loop
-    function loop() {
-      var width = video.videoWidth;
-      var height = video.videoHeight;
-      if (!width || !height) return;
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(video, 0, 0);
-      var image = ctx.getImageData(0, 0, width, height);
-      detect(image);
-    }
-    // helper function for draw rotated rect
-    function drawRotatedRect(x, y, width, height, degrees, color) {
-      // first save the untranslated/unrotated ctx
-      ctx.save();
-      ctx.beginPath();
-      // move the rotation point to the center of the rect
-      ctx.translate(x + width / 2, y + height / 2);
-      // rotate the rect
-      ctx.rotate(-degrees * Math.PI / 180);
-      // draw the rect on the transformed ctx
-      // Note: after transforming [0,0] is visually [x,y]
-      //       so the rect needs to be offset accordingly when drawn
-      ctx.rect(-width / 2, -height / 2, width, height);
-      ctx.strokeStyle = 'hsl(' + color + ',50%,50%)';
-      ctx.lineWidth = 3;
-      ctx.stroke();
-      // draw top line
-      ctx.beginPath();
-      ctx.moveTo(-width / 2, -height / 2);
-      ctx.lineTo(width / 2, -height / 2);
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'blue';
-      ctx.stroke();
-      // restore the ctx to its untranslated/unrotated state
-      ctx.restore();
-    }
-    // load cascade
-    PICO.loadCascade('./cascade/facefinder').then(function() {
-      // capture video from webcam
-      navigator.getUserMedia({
-        video: true
-      }, function(stream) {
-        // create PICO instance with options
-        detect = PICO.createDetector(cascade, {
-          shiftfactor: 0.1, // move the detection window by 10% of its size
-          scalefactor: 1.1, // for multiscale processing: resize the detection window by 10% when moving to the higher scale
-          initialsize: 0.1, // minimum size of a face (10% of image area)
-          // rotation: [0, 15, 30, 45, 60, 75, 90, 270, 285, 300, 315, 330, 345],
-          // rotation: [0, 18, 36, 54, 72, 90, 270, 288, 306, 324, 342],
-          rotation: [0, 30, 60, 90, 270, 300, 330], // rotation angles
-          threshold: 0.2, // overlap threshold
-          memory: 3 // the number of images in memory
-        }, function(dets) {
+    <script type="text/javascript">
+      var detect;
+      var canvas = document.getElementById('canvas');
+      var ctx = canvas.getContext('2d');
+      var video = document.createElement('video');
+      // face detection loop
+      function loop() {
+        var width = video.videoWidth;
+        var height = video.videoHeight;
+        if (!width || !height) return;
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(video, 0, 0);
+        var image = ctx.getImageData(0, 0, width, height);
+        var d = Date.now();
+        detect(image).then(function(dets) {
+          console.log('Detection time:', Date.now() - d, 'ms');
           // draw detections
           for (var i = 0; i < dets.length; ++i) {
             var face = dets[i];
             // check the detection score
             // if it's above the threshold, draw it
-            // the constant 10.0 is empirical: it depends on PICO options
-            if (face.q > 10.0) {
-              drawRotatedRect(~~(face.c - face.s / 2), ~~(face.r - face.s / 2), face.s, face.s, face.a, ~~(face.q / 10));
+            // the constant 50.0 is empirical: it depends on PICO options
+            var threshold = 50;
+            if (face.q > threshold) {
+              drawRotatedRect(
+                ~~(face.c - face.s / 2),
+                ~~(face.r - face.s / 2),
+                face.s,
+                face.s,
+                face.a,
+                ~~(face.q / threshold)
+              );
             }
+            setTimeout(requestAnimationFrame.bind(null, loop), 1000);
           }
-          requestAnimationFrame(loop);
         });
-        video.srcObject = stream;
-        video.onplaying = function() {
-          requestAnimationFrame(loop);
-        };
-        video.play();
-      }, function(err) {
-        alert(err.toString());
-      });
-    }).catch(function(err) {
-      alert(err.toString());
-    });
-  </script>
-
-</body>
-
+      }
+      // helper function for draw rotated rect
+      function drawRotatedRect(x, y, width, height, degrees, color) {
+        // first save the untranslated/unrotated ctx
+        ctx.save();
+        ctx.beginPath();
+        // move the rotation point to the center of the rect
+        ctx.translate(x + width / 2, y + height / 2);
+        // rotate the rect
+        ctx.rotate((-degrees * Math.PI) / 180);
+        // draw the rect on the transformed ctx
+        // Note: after transforming [0,0] is visually [x,y]
+        //       so the rect needs to be offset accordingly when drawn
+        ctx.rect(-width / 2, -height / 2, width, height);
+        ctx.strokeStyle = 'hsl(' + color + ',50%,50%)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // draw top line
+        ctx.beginPath();
+        ctx.moveTo(-width / 2, -height / 2);
+        ctx.lineTo(width / 2, -height / 2);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = 'blue';
+        ctx.stroke();
+        // restore the ctx to its untranslated/unrotated state
+        ctx.restore();
+      }
+      // load cascade
+      fetch('./cascade.json')
+        .then(function(response) {
+          if (!response.ok)
+            throw new Error(response.statusText || 'Request error');
+          return response.json();
+        })
+        .then(function(cascade) {
+          // create PICO instance without options
+          detect = PICO(cascade);
+          // capture video from webcam
+          return navigator.mediaDevices.getUserMedia({ video: true });
+        })
+        .then(function(stream) {
+          video.srcObject = stream;
+          video.onplaying = function() {
+            requestAnimationFrame(loop);
+          };
+          video.play();
+        })
+        .catch(function(err) {
+          alert(err.toString());
+        });
+    </script>
+  </body>
 </html>

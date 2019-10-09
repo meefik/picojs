@@ -19,14 +19,17 @@
  * @param {number} [options.memory=1] Number of images in the memory.
  */
 function PICO(cascade, options) {
-  options = Object.assign({
-    shiftfactor: 0.1,
-    scalefactor: 1.1,
-    initialsize: 0.1,
-    rotation: [0, 30, 330],
-    threshold: 0.2,
-    memory: 1
-  }, options || {});
+  options = Object.assign(
+    {
+      shiftfactor: 0.1,
+      scalefactor: 1.1,
+      initialsize: 0.1,
+      rotation: [0, 30, 330],
+      threshold: 0.2,
+      memory: 1
+    },
+    options || {}
+  );
   var _clfn = unpackCascade(new Int8Array(cascade));
   var _mu = getMemoryUpdater(options.memory);
 
@@ -40,8 +43,23 @@ function PICO(cascade, options) {
   function detect(image) {
     var { data, width, height } = image;
     var pixels = grayscale(data, width, height);
-    var { shiftfactor, scalefactor, initialsize, rotation, threshold } = options;
-    var dets = runCascade(pixels, width, height, _clfn, shiftfactor, scalefactor, initialsize, rotation);
+    var {
+      shiftfactor,
+      scalefactor,
+      initialsize,
+      rotation,
+      threshold
+    } = options;
+    var dets = runCascade(
+      pixels,
+      width,
+      height,
+      _clfn,
+      shiftfactor,
+      scalefactor,
+      initialsize,
+      rotation
+    );
     dets = clusterDetections(_mu(dets), threshold);
     return dets;
   }
@@ -58,12 +76,18 @@ function PICO(cascade, options) {
     // (cascade version number and some data used during the learning process)
     var p = 8;
     // read the depth (size) of each tree first: a 32-bit signed integer
-    dview.setUint8(0, bytes[p + 0]), dview.setUint8(1, bytes[p + 1]), dview.setUint8(2, bytes[p + 2]), dview.setUint8(3, bytes[p + 3]);
+    dview.setUint8(0, bytes[p + 0]),
+    dview.setUint8(1, bytes[p + 1]),
+    dview.setUint8(2, bytes[p + 2]),
+    dview.setUint8(3, bytes[p + 3]);
     var tdepth = dview.getInt32(0, true);
     var pow2tdepth = Math.pow(2, tdepth) >> 0; // '>>0' transforms this number to int
     p = p + 4;
     // next, read the number of trees in the cascade: another 32-bit signed integer
-    dview.setUint8(0, bytes[p + 0]), dview.setUint8(1, bytes[p + 1]), dview.setUint8(2, bytes[p + 2]), dview.setUint8(3, bytes[p + 3]);
+    dview.setUint8(0, bytes[p + 0]),
+    dview.setUint8(1, bytes[p + 1]),
+    dview.setUint8(2, bytes[p + 2]),
+    dview.setUint8(3, bytes[p + 3]);
     var ntrees = dview.getInt32(0, true);
     p = p + 4;
     // read the actual trees and cascade thresholds
@@ -74,16 +98,25 @@ function PICO(cascade, options) {
       var i;
       // read the binary tests placed in internal tree nodes
       Array.prototype.push.apply(tcodes, [0, 0, 0, 0]);
-      Array.prototype.push.apply(tcodes, bytes.slice(p, p + 4 * Math.pow(2, tdepth) - 4));
+      Array.prototype.push.apply(
+        tcodes,
+        bytes.slice(p, p + 4 * Math.pow(2, tdepth) - 4)
+      );
       p = p + 4 * Math.pow(2, tdepth) - 4;
       // read the prediction in the leaf nodes of the tree
       for (i = 0; i < Math.pow(2, tdepth); ++i) {
-        dview.setUint8(0, bytes[p + 0]), dview.setUint8(1, bytes[p + 1]), dview.setUint8(2, bytes[p + 2]), dview.setUint8(3, bytes[p + 3]);
+        dview.setUint8(0, bytes[p + 0]),
+        dview.setUint8(1, bytes[p + 1]),
+        dview.setUint8(2, bytes[p + 2]),
+        dview.setUint8(3, bytes[p + 3]);
         tpreds.push(dview.getFloat32(0, true));
         p = p + 4;
       }
       // read the threshold
-      dview.setUint8(0, bytes[p + 0]), dview.setUint8(1, bytes[p + 1]), dview.setUint8(2, bytes[p + 2]), dview.setUint8(3, bytes[p + 3]);
+      dview.setUint8(0, bytes[p + 0]),
+      dview.setUint8(1, bytes[p + 1]),
+      dview.setUint8(2, bytes[p + 2]),
+      dview.setUint8(3, bytes[p + 3]);
       thresh.push(dview.getFloat32(0, true));
       p = p + 4;
     }
@@ -91,7 +124,7 @@ function PICO(cascade, options) {
     var qcostable = [];
     var qsintable = [];
     for (let i = 0; i < 360; i++) {
-      let a = i * Math.PI / 180;
+      let a = (i * Math.PI) / 180;
       qcostable[i] = Math.cos(a) * 256;
       qsintable[i] = Math.sin(a) * 256;
     }
@@ -145,9 +178,18 @@ function PICO(cascade, options) {
    * @param {number|number[]} rotation Angles of rotation in degrees.
    * @return {number[][]} Data of detections.
    */
-  function runCascade(pixels, width, height, clfn, shiftfactor, scalefactor, initialsize, rotation) {
+  function runCascade(
+    pixels,
+    width,
+    height,
+    clfn,
+    shiftfactor,
+    scalefactor,
+    initialsize,
+    rotation
+  ) {
     rotation = rotation ? [].concat(rotation) : [0]; // index from qcostable/qsintable
-    var minsize = initialsize * Math.sqrt(width * height) | 0;
+    var minsize = (initialsize * Math.sqrt(width * height)) | 0;
     var blocksize = Math.max(width, height);
     var detections = [];
     while (blocksize >= minsize) {
@@ -184,8 +226,14 @@ function PICO(cascade, options) {
     var c2 = det2[1];
     var s2 = det2[2];
     // calculate detection overlap in each dimension
-    var or = Math.max(0, Math.min(r1 + s1 / 2, r2 + s2 / 2) - Math.max(r1 - s1 / 2, r2 - s2 / 2));
-    var oc = Math.max(0, Math.min(c1 + s1 / 2, c2 + s2 / 2) - Math.max(c1 - s1 / 2, c2 - s2 / 2));
+    var or = Math.max(
+      0,
+      Math.min(r1 + s1 / 2, r2 + s2 / 2) - Math.max(r1 - s1 / 2, r2 - s2 / 2)
+    );
+    var oc = Math.max(
+      0,
+      Math.min(c1 + s1 / 2, c2 + s2 / 2) - Math.max(c1 - s1 / 2, c2 - s2 / 2)
+    );
     // minimum size
     var ms = Math.min(s1, s2);
     // calculate and return overlap
@@ -200,7 +248,7 @@ function PICO(cascade, options) {
    */
   function clusterDetections(dets, threshold) {
     // sort detections by their quality
-    dets.sort(function (a, b) {
+    dets.sort(function(a, b) {
       return b[3] - a[3];
     });
     // do clustering through non-maximum suppression
@@ -228,7 +276,13 @@ function PICO(cascade, options) {
         }
       }
       // make a cluster representative
-      clusters.push({ r: r / n | 0, c: c / n | 0, s: s / n | 0, q: q, a: a });
+      clusters.push({
+        r: (r / n) | 0,
+        c: (c / n) | 0,
+        s: (s / n) | 0,
+        q: q,
+        a: a
+      });
     }
     return clusters;
   }
@@ -298,7 +352,9 @@ function PICO(cascade, options) {
 
     var len = pixels.length >> 2;
     var gray = fillRGBA ? new Uint32Array(len) : new Uint8Array(len);
-    var data32 = new Uint32Array(pixels.buffer || new Uint8Array(pixels).buffer);
+    var data32 = new Uint32Array(
+      pixels.buffer || new Uint8Array(pixels).buffer
+    );
     var i = 0;
     var c = 0;
     var luma = 0;
@@ -314,13 +370,21 @@ function PICO(cascade, options) {
         // But I'm using scaled integers here for speed (x 0xffff). This can be improved more using 2^n
         //   close to the factors allowing for shift-ops (i.e. 4732 -> 4096 => .. (c&0xff) << 12 .. etc.)
         //   if "accuracy" is not important (luma is anyway an visual approx.):
-        luma = ((c >>> 16 & 0xff) * 13933 + (c >>> 8 & 0xff) * 46871 + (c & 0xff) * 4732) >>> 16;
-        gray[i++] = luma * 0x10101 | c & 0xff000000;
+        luma =
+          (((c >>> 16) & 0xff) * 13933 +
+            ((c >>> 8) & 0xff) * 46871 +
+            (c & 0xff) * 4732) >>>
+          16;
+        gray[i++] = (luma * 0x10101) | (c & 0xff000000);
       }
     } else {
       while (i < len) {
         c = data32[i];
-        luma = ((c >>> 16 & 0xff) * 13933 + (c >>> 8 & 0xff) * 46871 + (c & 0xff) * 4732) >>> 16;
+        luma =
+          (((c >>> 16) & 0xff) * 13933 +
+            ((c >>> 8) & 0xff) * 46871 +
+            (c & 0xff) * 4732) >>>
+          16;
         // ideally, alpha should affect value here: value * (alpha/255) or with shift-ops for the above version
         gray[i++] = luma;
       }
@@ -334,45 +398,30 @@ function PICO(cascade, options) {
 }
 
 /**
- * Load the cascade from URL.
- *
- * @param {string} url URL of the cascade file.
- * @return {Promise}
- */
-export function loadCascade(url) {
-  return fetch(url).then((response) => {
-    if (!response.ok) throw new Error(response.statusText || 'Request error');
-    return response.arrayBuffer().then(this.parseCascade.bind(this));
-  });
-}
-
-/**
  * Create detector function.
  *
  * @param {number[]} cascade Classification cascade.
  * @param {Object} [options] Algorithm options.
  * @return {function} Detector function.
  */
-export function createDetector(cascade, options, cb) {
+export default function(cascade, options) {
   // create worker
-  let fnString = `(function(){${PICO.toString()};var detect=${PICO.name}(${JSON.stringify(cascade)},${JSON.stringify(options)});onmessage=function(e){postMessage(detect(e.data));};})();`;
-  let workerBlob = new Blob([fnString]);
-  let workerBlobURL = window.URL.createObjectURL(workerBlob, { type: 'application/javascript; charset=utf-8' });
-  let worker = new Worker(workerBlobURL);
-
-  // bind callback
-  worker.onmessage = function (e) { cb(e.data); };
+  const fnString = `(function(){${PICO.toString()};var detect=${
+    PICO.name
+  }(${JSON.stringify(cascade)},${JSON.stringify(
+    options
+  )});onmessage=function(e){postMessage(detect(e.data));};})();`;
+  const workerBlob = new Blob([fnString]);
+  const workerBlobURL = window.URL.createObjectURL(workerBlob, {
+    type: 'application/javascript; charset=utf-8'
+  });
+  const worker = new Worker(workerBlobURL);
 
   // send data
-  return function (data) {
-    worker.postMessage(data);
+  return function(data) {
+    return new Promise(resolve => {
+      worker.onmessage = e => resolve(e.data);
+      worker.postMessage(data);
+    });
   };
 }
-
-/**
- * Default export for library.
- */
-export default {
-  createDetector,
-  loadCascade
-};
