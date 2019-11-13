@@ -44,7 +44,7 @@ npm install
 npm start
 ```
 
-And open the link in your browser http://localhost:8080
+And open the link in your browser http://localhost:3000
 
 [![pico.js](https://img.youtube.com/vi/9WiGC08_ZFY/0.jpg)](https://www.youtube.com/watch?v=9WiGC08_ZFY)
 
