@@ -408,8 +408,8 @@ export default function(cascade, options) {
   // create worker
   const fnString = `(function(){${PICO.toString()};var detect=${
     PICO.name
-  }(${JSON.stringify(cascade)},${JSON.stringify(
-    options
+  }([${new Int8Array(cascade).toString()}],${JSON.stringify(
+    options || {}
   )});onmessage=function(e){postMessage(detect(e.data));};})();`;
   const workerBlob = new Blob([fnString]);
   const workerBlobURL = window.URL.createObjectURL(workerBlob, {

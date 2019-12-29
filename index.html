@@ -82,11 +82,10 @@
         ctx.restore();
       }
       // load cascade
-      fetch('./cascade.json')
+      fetch('./cascade.dat')
         .then(function(response) {
-          if (!response.ok)
-            throw new Error(response.statusText || 'Request error');
-          return response.json();
+          if (!response.ok) throw Error(response.statusText || 'Request error');
+          return response.arrayBuffer();
         })
         .then(function(cascade) {
           // create PICO instance without options
