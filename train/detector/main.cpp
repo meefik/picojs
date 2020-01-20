@@ -1,3 +1,5 @@
+#include <dirent.h>
+#include <string>
 #include <iostream>
 #include <opencv2/highgui.hpp>
 #include <opencv2/dnn.hpp>
@@ -6,9 +8,7 @@ using namespace std;
 using namespace cv;
 using namespace dnn;
 
-Net net;
-
-int dnnFaceDetect(Mat &frame, Rect2d &roi, const float confThreshold = 0.5) {
+int dnnFaceDetect(Net &net, Mat &frame, Rect2d &roi, const float confThreshold = 0.5) {
     Mat blob = dnn::blobFromImage(frame, 1, Size(300,300), Scalar(0,0,0,0), false, CV_8U);
     net.setInput(blob);
     Mat res = net.forward("detection_out");
@@ -40,9 +40,7 @@ int dnnFaceDetect(Mat &frame, Rect2d &roi, const float confThreshold = 0.5) {
                 roi.y = top;
                 roi.width = width;
                 roi.height = height;
-//                roi = Rect(left, top, width, height);
             }
-            //cout << classId<< " " << confidence<< " " << left<< " " << top<< " " << right<< " " << bottom<< endl;
         }
     }
     return count;
@@ -51,24 +49,43 @@ int dnnFaceDetect(Mat &frame, Rect2d &roi, const float confThreshold = 0.5) {
 int main(int argc, char *argv[])
 {
     if (argc < 2) {
-        printf("Usage: detector <image_file> [threshold]\n");
+        std::cout << "Usage: detector <path> [threshold]" << std::endl;
         return 1;
     }
-    float c = 0.5;
+    char *path = argv[1];
+    float threshold = 0.87;
     if (argc > 2) {
-        c = atof(argv[2]);
+        threshold = atof(argv[2]);
     }
 
-    Mat image = imread(argv[1]);
-
+    Net net = dnn::readNetFromTensorflow("opencv_face_detector_uint8.pb", "opencv_face_detector.pbtxt");
+    Mat image;
     Rect2d roi;
 
-    net = dnn::readNetFromTensorflow("opencv_face_detector_uint8.pb", "opencv_face_detector.pbtxt");
-
-    int n = dnnFaceDetect(image, roi, c);
-    if (n > 0) {
-      printf("%d %d %d\n", int(roi.x+roi.width/2), int(roi.y+roi.height/2), int(sqrt(roi.width*roi.height)));
+    DIR *dir;
+    dirent *pdir;
+    int n;
+    dir = opendir(path);
+    while((pdir = readdir(dir)) != NULL)
+    {
+        if (pdir->d_type != DT_REG) continue;
+        string fp = string(path) + pdir->d_name;
+        image = imread(fp);
+        n = dnnFaceDetect(net, image, roi, threshold);
+        if (n == 1) {
+            std::cout << int(roi.x+roi.width/2);
+            std::cout << "\t";
+            std::cout << int(roi.y+roi.height/2);
+            std::cout << "\t";
+            std::cout << int(sqrt(roi.width*roi.height));
+            std::cout << "\t";
+            std::cout << fp.c_str() << std::endl;
+        } else if (n == 0) {
+            std::cerr << "0\t0\t0\t";
+            std::cerr << fp.c_str() << std::endl;
+        }
     }
+    closedir(dir);
 
     return 0;
 }

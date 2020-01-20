@@ -24,8 +24,7 @@ cmake -S "./opencv" -B "./opencv_build" \
 Build `detector`:
 
 ```sh
-cmake -S "./detector" -B "./detector_build" \
- -DCMAKE_BUILD_TYPE=Release
+cmake -S "./detector" -B "./detector_build"
 
 (
   cd ./detector_build
@@ -51,21 +50,25 @@ wget https://github.com/opencv/opencv_3rdparty/raw/8033c2bc31b3256f0d461c919ecc0
 
 ## How to train classifier
 
-Make faces.txt and labels.txt:
+Remove low quality images if necessary (less than 8k and not equal to 640x480):
 
 ```sh
-PATH=$PATH:./detector_build ./faces.sh /path/to/images/
+find /path/to/images/ -type f -size -8k -exec rm {} \;
+find /path/to/images/ -type f | while read f; do identify $f | grep -q 'JPEG 640x480' || rm $f; done
 ```
 
-Make backgrounds.txt:
+Make labels.txt:
+
 ```sh
-PATH=$PATH:./detector_build ./backgrounds.sh /path/to/images/
+./detector_build/detector /path/to/images/ 0.87 1>faces.txt
+./detector_build/detector /path/to/images/ 0.13 2>backgrounds.txt
+cat faces.txt backgrounds.txt >labels.txt
 ```
 
 Prepare positive training samples and background images:
 
 ```sh
-./im.py --faces=faces.txt --labels=labels.txt --backgrounds=backgrounds.txt /path/to/images >trdata
+./im.py labels.txt >trdata
 ```
 
 The file `trdata` can now be processed with `picolrn`.
