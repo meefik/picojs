@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image Annotation Tool</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        display: flex;
+      }
+      #canvas {
+        flex: 1;
+        width: inherit;
+        height: inherit;
+        background-repeat: no-repeat;
+      }
+      .rectangle {
+        border: 1px solid #ff0000;
+        position: absolute;
+        box-sizing: border-box;
+      }
+      #sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 350px;
+        background-color: #eee;
+        border: 1px solid #999;
+        padding: 5px;
+      }
+      #output {
+        text-align: center;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #999;
+        margin-bottom: 10px;
+      }
+      #images {
+        flex: 1;
+        padding: 10px 0;
+        overflow-y: scroll;
+        border-top: 1px solid #999;
+        margin-top: 10px;
+      }
+      #images > div:hover {
+        background-color: #fff;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="canvas"></div>
+    <div id="sidebar">
+      <div id="output">c = 0 r = 0 s = 0</div>
+      <label for="uploads">Images</label>
+      <input
+        id="uploads"
+        type="file"
+        onchange="uploadImages(event)"
+        accept="image/jpeg,image/png"
+        multiple
+      />
+      <label for="labels">Labels</label>
+      <input
+        id="labels"
+        type="file"
+        onchange="uploadLabels(event)"
+        accept="text/plain"
+      />
+      <div id="images"></div>
+      <button onclick="downloadLabels(event)">Download Labels</button>
+    </div>
+
+    <script>
+      var canvas = document.getElementById('canvas');
+      var output = document.getElementById('output');
+      var images = document.getElementById('images');
+
+      var mouse = {
+        x: 0,
+        y: 0,
+        startX: 0,
+        startY: 0
+      };
+      var element = null;
+      
+      window.onbeforeunload = function() {};
+
+      canvas.onmousemove = function(e) {
+        mouse.x = e.pageX;
+        mouse.y = e.pageY;
+        if (element !== null) {
+          var x = mouse.startX;
+          var y = mouse.startY;
+          var w = mouse.x - x;
+          var h = mouse.y - y;
+          if (w < 0) w = 0;
+          if (h < 0) h = 0;
+          var s = Math.max(w, h);
+          var c = ~~(x + s / 2);
+          var r = ~~(y + s / 2);
+          element.style.left = x + 'px';
+          element.style.top = y + 'px';
+          element.style.width = s + 'px';
+          element.style.height = s + 'px';
+          output.innerHTML = `c = ${c} r = ${r} s = ${s}`;
+          var selected = images.querySelector('input[type="radio"]:checked');
+          if (selected) {
+            selected.parentNode.dataset.labels = [c, r, s].toString();
+          }
+        }
+      };
+
+      canvas.onclick = function(e) {
+        if (element !== null) {
+          element = null;
+          canvas.style.cursor = 'default';
+        } else {
+          canvas.innerHTML = '';
+          mouse.startX = mouse.x;
+          mouse.startY = mouse.y;
+          element = document.createElement('div');
+          element.className = 'rectangle';
+          element.style.left = mouse.x + 'px';
+          element.style.top = mouse.y + 'px';
+          canvas.appendChild(element);
+          canvas.style.cursor = 'crosshair';
+        }
+      };
+      
+      window.onbeforeunload = function() {
+        return false;
+      };
+
+      function uploadImages(e) {
+        canvas.style.backgroundImage = 'none';
+        var files = e.target.files;
+        [].forEach.call(images.querySelectorAll('div[data-url]'), function(
+          item
+        ) {
+          URL.revokeObjectURL(item.dataset.url);
+          item.remove();
+        });
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          var div = document.createElement('div');
+          div.dataset.url = URL.createObjectURL(file);
+          div.dataset.file = file.name;
+          var radio = document.createElement('input');
+          radio.id = 'image' + i;
+          radio.type = 'radio';
+          radio.name = 'images';
+          radio.onchange = function(e) {
+            var parent = e.target.parentNode;
+            canvas.innerHTML = '';
+            canvas.style.backgroundImage = 'url(' + parent.dataset.url + ')';
+            var labels = (parent.dataset.labels || '').split(',');
+            var c = labels[0];
+            var r = labels[1];
+            var s = labels[2];
+            var x = ~~(c - s / 2);
+            var y = ~~(r - s / 2);
+            var rect = document.createElement('div');
+            rect.className = 'rectangle';
+            rect.style.left = x + 'px';
+            rect.style.top = y + 'px';
+            rect.style.width = s + 'px';
+            rect.style.height = s + 'px';
+            canvas.appendChild(rect);
+          };
+          div.appendChild(radio);
+          var label = document.createElement('label');
+          label.setAttribute('for', 'image' + i);
+          label.innerText =
+            file.name + ' [' + (file.size / 1024).toFixed(2) + ' kb]';
+          div.appendChild(label);
+          images.appendChild(div);
+        }
+      }
+
+      function uploadLabels(e) {
+        var file = e.target.files[0];
+        var url = URL.createObjectURL(file);
+        fetch(url)
+          .then(function(responce) {
+            URL.revokeObjectURL(url);
+            return responce.text();
+          })
+          .then(function(text) {
+            var labels = text.split('\n').reduce(function(res, line) {
+              if (line) {
+                var cols = line.split(/\s/);
+                var c = cols[0];
+                var r = cols[1];
+                var s = cols[2];
+                var f = cols[3].split('/').pop();
+                res[f] = [c, r, s];
+              }
+              return res;
+            }, {});
+            [].forEach.call(images.querySelectorAll('div[data-file]'), function(
+              item
+            ) {
+              item.dataset.labels = String(labels[item.dataset.file]);
+            });
+          });
+      }
+
+      function downloadLabels() {
+        var labels = [].map.call(
+          images.querySelectorAll('div[data-file]'),
+          function(item) {
+            var fn = item.dataset.file;
+            var lb = (item.dataset.labels || '').split(',');
+            var c = lb[0] || 0;
+            var r = lb[1] || 0;
+            var s = lb[2] || 0;
+            return c + '\t' + r + '\t' + s + '\t' + fn;
+          }
+        );
+        var text = labels.join('\n');
+        var blob = new Blob([text], { type: 'octet/stream' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'labels.csv';
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    </script>
+  </body>
+</html>

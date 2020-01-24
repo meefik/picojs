@@ -24,7 +24,7 @@ function PICO(cascade, options) {
       shiftfactor: 0.1,
       scalefactor: 1.1,
       initialsize: 0.1,
-      rotation: [0, 30, 330],
+      rotation: 0,
       threshold: 0.2,
       memory: 1
     },
