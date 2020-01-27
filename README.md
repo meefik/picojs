@@ -9,7 +9,7 @@ An example of using the basic functions of the library:
 
 ```js
 // load cascade
-fetch('./cascade.dat')
+fetch('./data/faces.dat')
   .then(function(response) {
     if (!response.ok) throw Error(response.statusText || 'Request error');
     return response.arrayBuffer();
