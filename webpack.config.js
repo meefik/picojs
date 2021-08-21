@@ -1,7 +1,7 @@
 const path = require('path');
-const CopyPlugin = require("copy-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
 
-module.exports = function(env, argv) {
+module.exports = function (env, argv) {
   const devMode = argv.mode !== 'production';
   return {
     mode: devMode ? 'development' : 'production',
