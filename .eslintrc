@@ -1,0 +1,25 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true
+  },
+  "extends": [
+    "standard"
+  ],
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "requireConfigFile": false
+  },
+  "ignorePatterns": [
+    "*.min.js",
+    "dist/**/*.js",
+    "node_modules/**/*.js"
+  ],
+  "rules": {
+    "semi": [
+      "error",
+      "always"
+    ]
+  }
+}

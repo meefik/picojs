@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = function(env, argv) {
   const devMode = argv.mode !== 'production';
@@ -18,8 +19,8 @@ module.exports = function(env, argv) {
     module: {
       rules: [
         {
-          test: /\.(js)$/,
-          exclude: /(node_modules)/,
+          test: /\.js$/,
+          exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
             options: {
@@ -28,6 +29,14 @@ module.exports = function(env, argv) {
           }
         }
       ]
-    }
+    },
+    plugins: [
+      new CopyPlugin({
+        patterns: [
+          { from: 'index.html' },
+          { from: 'data/', to: 'data/' }
+        ]
+      })
+    ]
   };
 };
