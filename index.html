@@ -118,7 +118,7 @@
       })
       .then(function (cascade) {
         // create PICO instance without options
-        detect = PICO(cascade, { rotation: [0, 30, 330] });
+        detect = PICO(cascade, { rotation: [0, 30, 330], memory: 3 });
         // capture video from webcam
         return navigator.mediaDevices.getUserMedia({ video: true });
       })

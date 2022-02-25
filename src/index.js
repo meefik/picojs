@@ -42,7 +42,7 @@ function PICO (cascade, options) {
    */
   function detect (image) {
     const { data, width, height } = image;
-    const pixels = grayscale(data, width, height);
+    const pixels = grayscale(data);
     const {
       shiftfactor,
       scalefactor,
@@ -189,13 +189,13 @@ function PICO (cascade, options) {
   ) {
     rotation = rotation ? [].concat(rotation) : [0]; // index from qcostable/qsintable
     const minsize = (initialsize * Math.sqrt(width * height)) | 0;
-    let blocksize = Math.max(width, height);
+    let blocksize = Math.min(width, height);
     const detections = [];
     while (blocksize >= minsize) {
       const step = (shiftfactor * blocksize + 1) >> 0;
       const offset = (blocksize / 2 + 1) >> 0;
-      for (let r = offset; r <= height - offset; r += step) {
-        for (let c = offset; c <= width - offset; c += step) {
+      for (let r = offset; r < height - offset; r += step) {
+        for (let c = offset; c < width - offset; c += step) {
           for (let i = 0; i < rotation.length; i++) {
             const a = rotation[i];
             const q = clfn(r, c, a, blocksize, pixels, width);
@@ -323,14 +323,12 @@ function PICO (cascade, options) {
    * The source code from tracking.js: https://github.com/eduardolundgren/tracking.js
    *
    * @param {Uint8Array|Uint8ClampedArray|Array} pixels The pixels in a linear [r,g,b,a,...] array.
-   * @param {number} width The image width.
-   * @param {number} height The image height.
    * @param {boolean} fillRGBA If the result should fill all RGBA values with the gray scale
    *  values, instead of returning a single value per pixel.
    * @return {Uint8ClampedArray} The grayscale pixels in a linear array ([p,p,p,a,...] if fillRGBA
    *  is true and [p1, p2, p3, ...] if fillRGBA is false).
    */
-  function grayscale (pixels, width, height, fillRGBA) {
+  function grayscale (pixels, fillRGBA) {
     /*
       Performance result (rough EST. - image size, CPU arch. will affect):
       https://jsperf.com/tracking-new-image-to-grayscale
@@ -372,8 +370,7 @@ function PICO (cascade, options) {
         luma =
           (((c >>> 16) & 0xff) * 13933 +
             ((c >>> 8) & 0xff) * 46871 +
-            (c & 0xff) * 4732) >>>
-          16;
+            (c & 0xff) * 4732) >>> 16;
         gray[i++] = (luma * 0x10101) | (c & 0xff000000);
       }
     } else {
@@ -382,8 +379,7 @@ function PICO (cascade, options) {
         luma =
           (((c >>> 16) & 0xff) * 13933 +
             ((c >>> 8) & 0xff) * 46871 +
-            (c & 0xff) * 4732) >>>
-          16;
+            (c & 0xff) * 4732) >>> 16;
         // ideally, alpha should affect value here: value * (alpha/255) or with shift-ops for the above version
         gray[i++] = luma;
       }
