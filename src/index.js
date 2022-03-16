@@ -97,13 +97,10 @@ function PICO (cascade, options) {
     for (let t = 0; t < ntrees; ++t) {
       // read the binary tests placed in internal tree nodes
       Array.prototype.push.apply(tcodes, [0, 0, 0, 0]);
-      Array.prototype.push.apply(
-        tcodes,
-        bytes.slice(p, p + 4 * Math.pow(2, tdepth) - 4)
-      );
-      p = p + 4 * Math.pow(2, tdepth) - 4;
+      Array.prototype.push.apply(tcodes, bytes.slice(p, p + 4 * pow2tdepth - 4));
+      p = p + 4 * pow2tdepth - 4;
       // read the prediction in the leaf nodes of the tree
-      for (let i = 0; i < Math.pow(2, tdepth); ++i) {
+      for (let i = 0; i < pow2tdepth; ++i) {
         dview.setUint8(0, bytes[p + 0]);
         dview.setUint8(1, bytes[p + 1]);
         dview.setUint8(2, bytes[p + 2]);

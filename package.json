@@ -1,6 +1,6 @@
 {
   "name": "pico.js",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A library for detecting faces using the PICO algorithm",
   "author": "Anton Skshidlevsky <meefik@gmail.com>",
   "license": "MIT",
@@ -10,18 +10,18 @@
     "build": "webpack --mode=production --progress"
   },
   "devDependencies": {
-    "@babel/core": "^7.17.5",
+    "@babel/core": "^7.17.7",
     "@babel/eslint-parser": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
     "babel-loader": "^8.2.3",
     "copy-webpack-plugin": "^10.2.4",
-    "eslint": "^8.9.0",
+    "eslint": "^8.11.0",
     "eslint-config-standard": "^16.0.3",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.0.0",
     "terser-webpack-plugin": "^5.3.1",
-    "webpack": "^5.69.1",
+    "webpack": "^5.70.0",
     "webpack-cli": "^4.9.2",
     "webpack-dev-server": "^4.7.4"
   }
