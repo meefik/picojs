@@ -9,7 +9,12 @@
   "parser": "@babel/eslint-parser",
   "parserOptions": {
     "sourceType": "module",
-    "requireConfigFile": false
+    "requireConfigFile": false,
+    "babelOptions": {
+      "babelrc": false,
+      "configFile": false,
+      "presets": ["@babel/preset-env"]
+    }
   },
   "ignorePatterns": [
     "*.min.js",
@@ -17,10 +22,6 @@
     "node_modules/**/*.js"
   ],
   "rules": {
-    "indent": [
-      "error",
-      2
-    ],
     "semi": [
       "error",
       "always"
