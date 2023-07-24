@@ -276,8 +276,8 @@ function PICO (cascade, options) {
         r: (r / n) | 0,
         c: (c / n) | 0,
         s: (s / n) | 0,
-        q: q,
-        a: a
+        q,
+        a
       });
     }
     return clusters;

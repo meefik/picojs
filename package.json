@@ -1,28 +1,27 @@
 {
-  "name": "pico.js",
-  "version": "2.2.2",
+  "name": "@meefik/picojs",
+  "version": "2.3.0",
   "description": "A library for detecting faces using the PICO algorithm",
   "author": "Anton Skshidlevsky <meefik@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meefik/picojs.git"
+  },
+  "main": "src/pico.js",
+  "type": "module",
   "scripts": {
-    "start": "webpack-dev-server --port=3000 --host=localhost",
-    "lint": "eslint src/**/*.js --fix",
-    "build": "webpack --mode=production --progress"
+    "build": "rollup -c",
+    "dev": "web-dev-server --open"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.4",
-    "@babel/eslint-parser": "^7.21.3",
-    "@babel/preset-env": "^7.21.4",
-    "babel-loader": "^9.1.2",
-    "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.39.0",
-    "eslint-config-standard": "^17.0.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@web/dev-server": "^0.3.0",
+    "eslint": "^8.45.0",
+    "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.27.5",
-    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-n": "^16.0.1",
     "eslint-plugin-promise": "^6.1.1",
-    "terser-webpack-plugin": "^5.3.7",
-    "webpack": "^5.80.0",
-    "webpack-cli": "^5.0.2",
-    "webpack-dev-server": "^4.13.3"
+    "rollup": "^3.26.3"
   }
 }

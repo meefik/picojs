@@ -35,16 +35,20 @@ fetch('./data/faces.dat')
   });
 ```
 
-## Run demo
+## Build and run
 
-Run the dev server:
+Build the library bundle `./dist/pico.min.js`:
 
 ```
 npm install
-npm start
+npm run build
 ```
 
-And open the link in your browser http://localhost:3000
+Start the demo webserver:
+
+```
+npm run dev
+```
 
 [![pico.js](https://img.youtube.com/vi/9WiGC08_ZFY/0.jpg)](https://www.youtube.com/watch?v=9WiGC08_ZFY)
 
