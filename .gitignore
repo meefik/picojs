@@ -19,6 +19,9 @@ coverage
 # node-waf configuration
 .lock-wscript
 
+# Mac OS stuff
+.DS_Store
+
 # Compiled binary addons (http://nodejs.org/api/addons.html)
 build/Release
 
@@ -29,8 +32,3 @@ node_modules
 # Remove some common IDE working directories
 .idea
 .vscode
-
-.DS_Store
-
-# Distribution
-/dist/

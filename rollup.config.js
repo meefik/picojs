@@ -1,11 +1,16 @@
 import terser from '@rollup/plugin-terser';
 
+const { NODE_ENV = 'production' } = process.env;
+
 export default {
-  input: 'src/pico.js',
+  input: 'src/index.js',
   output: [{
-    file: 'dist/pico.min.js',
+    file: 'dist/pico.umd.js',
     format: 'umd',
-    name: 'PICO'
+    name: 'PICO',
+  }, {
+    file: 'dist/pico.esm.js',
+    format: 'esm',
   }],
-  plugins: [terser()]
+  plugins: NODE_ENV === 'production' ? [terser()] : [],
 };

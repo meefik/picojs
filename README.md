@@ -9,7 +9,7 @@ An example of using the basic functions of the library:
 
 ```js
 // load cascade
-fetch('./data/faces.dat')
+fetch('./data/classifier.dat')
   .then(function(response) {
     if (!response.ok) throw Error(response.statusText || 'Request error');
     return response.arrayBuffer();
@@ -20,7 +20,7 @@ fetch('./data/faces.dat')
       shiftfactor: 0.1, // move the detection window by 10% of its size
       scalefactor: 1.1, // resize the detection window by 10% when moving to the higher scale
       initialsize: 0.1, // minimum size of a face (10% of image area)
-      rotation: [0, 30, 60, 90, 270, 300, 330], // rotation angles in degrees
+      rotation: [0, 30, 330], // rotation angles in degrees
       threshold: 0.2, // overlap threshold
       memory: 3 // number of images in the memory
     });
@@ -37,7 +37,7 @@ fetch('./data/faces.dat')
 
 ## Build and run
 
-Build the library bundle `./dist/pico.min.js`:
+Build the library bundle in the directory `./dist/`:
 
 ```
 npm install
